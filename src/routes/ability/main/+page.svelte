@@ -1,1 +1,9 @@
-<h1>여기가 신세계 웨스트 블루</h1>
+<div class="content">
+    <h1>여기가 신세계 웨스트 블루</h1>
+</div>
+
+<style>
+    .content > h1 {
+        margin: 0%;
+    }
+</style>
