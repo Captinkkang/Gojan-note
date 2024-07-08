@@ -2,7 +2,15 @@
     import { goto } from "$app/navigation";
     let spot = "main"
 </script>
-<div id="top_bar"></div>
+<div id="top_bar">
+    <div class="title">blue board</div>
+    <a class="thum" href="https://kojan-h.goeas.kr/kojan-h/main.do">
+        <img src="../gojan.png" alt="이미지 로드 실패">
+    </a>
+    <button class="menu">
+        <img src="../menu.png" alt="이미지 로드 실패">
+    </button>
+</div>
 <div class="content_box">
     <slot />
 </div>
@@ -88,6 +96,52 @@
         background-color: rgb(7, 179, 253);
         width: 100vw;
         height: 10vh;
+        display: flex;
+    }
+
+    #top_bar > button {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgb(7, 179, 253);
+        border: none;
+    }
+
+    .menu > img {
+        width: 80%;
+        height: 80%;
+    }
+
+    .menu > img:hover {
+        cursor: pointer;
+    }
+
+    #top_bar > .title {
+        flex-grow: 50;
+        display: flex;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        font-style: italic;
+        font-weight: bold;
+        color: white;
+    }
+
+    #top_bar > .thum {
+        flex-grow: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .thum > img {
+        width: 80%;
+        height: 80%;
+    }
+
+    .thum > img:hover {
+        cursor: pointer;
     }
 
     #bottom_bar {
