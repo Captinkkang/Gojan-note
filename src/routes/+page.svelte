@@ -102,7 +102,7 @@
             </div>
             <div class="login_tap">
                 <div class="logo">
-                    <img src="" alt="">
+                    <img src="./gojan.png" alt="이미지 로드 실패">
                 </div>
                 <input type="text" bind:value={student_code} placeholder="학생 코드를 입력">
                 <input type="text" bind:value={password} placeholder="비밀 번호를 입력">
@@ -222,6 +222,11 @@
     .login_tap > .logo {
         height: 40vh;
         border: 1px solid rgba(7, 179, 253, 0.5);
+        border: none;
+    }
+
+    .logo > img {
+        width: 30vw;
     }
 
     .login_tap > input {

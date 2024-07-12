@@ -1,5 +1,7 @@
 <script>
     import { goto } from "$app/navigation";
+    import Sidebar from "$lib/sidebar.svelte"
+    import { isMenuOpen } from "$lib/store";
     let spot = "main"
 </script>
 <div id="top_bar">
@@ -7,9 +9,12 @@
     <a class="thum" href="https://kojan-h.goeas.kr/kojan-h/main.do">
         <img src="../gojan.png" alt="이미지 로드 실패">
     </a>
-    <button class="menu">
+    <button class="menu" on:click={()=>{
+        $isMenuOpen = true
+    }}>
         <img src="../menu.png" alt="이미지 로드 실패">
     </button>
+    <Sidebar />
 </div>
 <div class="content_box">
     <slot />
