@@ -16,14 +16,12 @@
     </button>
     <Sidebar />
 </div>
-<div class="content_box">
-    <slot />
-</div>
+<slot />
 <div id="bottom_bar">
     <div class="bottom_b">
         <button on:click={()=>{
             spot = "main"
-            goto("/ability/main")
+            goto("/ability/main/")
         }}>
             {#if spot==="main"}
                 <div>
@@ -155,6 +153,8 @@
         background-color: rgb(7, 179, 253);
         width: 100vw;
         height: 10vh;
+        position: fixed;
+        top: 90%;
     }
 
     #bottom_bar>.bottom_b {
@@ -170,10 +170,6 @@
         overflow: hidden;
         background-color: rgb(7, 179, 253);
         border: none;
-    }
-
-    .content_box {
-        height: 80vh;
     }
 
     .bottom_b>button:hover {
