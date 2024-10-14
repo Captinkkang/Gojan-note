@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Canvas from "../canvas.svelte";
+    import { slide } from "svelte/transition";
+    import { fly } from "svelte/transition";
 
     let color:string;
     let bright = '#fff'
@@ -8,11 +10,14 @@
     let recent_pallet = ["#000000","#ff0000","#ffae00","#fff700","#ffffff","#11ff00","#00eeff","#8000ff"]
     let r_pallet_open = false
     let choose_polygon = false
-    let click_chance:[number, boolean] = [0,false]
-    const draw_shape = (n:number) =>{
-        click_chance = [n,true]
+    let vtx_num = 0
+    let ischecked = false
+    let click_chance:[number, boolean, boolean] = [0,false, false]
+
+    const draw_shape = (n:number, c:boolean) =>{
+        click_chance = [n,true,c]
     }
-    console.log(choose_polygon)
+
     $:{
         if(recent_pallet.includes(color) === false){
             recent_pallet.pop()
@@ -84,22 +89,7 @@
                 {/each}
             </div>
         {/if}
-        {#if choose_polygon === true}
-            <div class="c_polygon">
-                <button on:click={()=>{
-                    console.log("make triangle")
-                    choose_polygon = false
-                    draw_shape(3)
-                }}>삼각형</button>
-                <button>정삼각형</button>
-                <button>직사각형</button>
-                <button>정사각형</button>
-                <button>평행사변형</button>
-                <button>정오각형</button>
-                <button>다각형</button>
-                <button>선</button>
-            </div>
-        {/if}
+        
     </div>
     <Canvas
         {color}
@@ -107,15 +97,53 @@
         line = {linewidth}
         draw = {click_chance}
     />
+    {#if choose_polygon === true}
+        <div class="c_polygon" transition:fly={{ x: 300, duration: 500 }}>
+            <div class="vtx">
+                <button on:click={()=>{
+                    console.log("start rect")
+                    choose_polygon = false
+                    if(typeof(Number(vtx_num)) === null||Number(vtx_num)<3)return
+                    draw_shape(Number(vtx_num), ischecked)
+                }}>다각형</button>
+                <input type="checkbox" bind:value={ischecked}>
+                <input type="number" class="vtx_in" bind:value={vtx_num}>
+            </div>
+            <div>
+                <button>정삼각형</button>
+            </div>
+            <div>
+                <button>직사각형</button>
+            </div>
+            <div>
+                <button>정사각형</button>
+            </div>
+            <div>
+                <button>평행사변형</button>
+            </div>
+            <div>
+                <button>정오각형</button>
+            </div>
+            <div>
+                <button>선</button>
+            </div>
+        </div>
+    {/if}
 </div>
 
 <style>
+    button {
+        cursor: pointer;
+    }
+
     .content {
         width: 100%;
     }
 
     .top_b {
+        width: 100vw;
         background-color: gray;
+        height: 10vh;
     }
 
     .r_pallet {
@@ -146,4 +174,44 @@
         opacity: 0.5;
     }
 
+    .c_polygon {
+        position: absolute;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        height: 70vh;
+        width: 30vw;
+        background-color: aqua;
+        align-items: flex-start;
+        top: 20vh;
+        left: 70vw;
+    }
+
+    .c_polygon > div {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-top: 3px;
+        height: 40px;
+        background: linear-gradient(25deg, aqua 20%, rgb(0, 192, 192));
+    }
+
+    .c_polygon > div > button {
+        height: 60%;
+        margin-left: 3px;
+    }
+    
+    .c_polygon > div > input {
+        height: 60%;
+    }
+
+    .vtx {
+        display: flex;
+        flex-direction: row;
+        height: 20px;
+    }
+
+    .vtx_in {
+        width: 40px;
+    }
 </style>

@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
 
     export let width = 500
     export let height = 500
     export let color = '#333'
     export let backcolor = '#fff'
     export let line:number = 3
-    export let draw:[number, boolean] = [0, false]
+    export let draw:[number, boolean, boolean] = [0, false, false]
 
     let canvas:HTMLCanvasElement;
     let ctx:CanvasRenderingContext2D|null;
@@ -14,15 +14,46 @@
     let start:{ x:number, y:number};
 
     let t:number, l:number
+    let canvasWidth = 0
+    let canvasHeight = 0
 
     onMount(()=>{
         ctx = canvas.getContext('2d')
         ctx!.lineWidth = line
 
         handleSize()
-    })
+        resizeCanvas()
+        
+        const resizeObserver = new ResizeObserver(()=>{
+            resizeCanvas()
+            handleSize()
+        })
 
-    
+        resizeObserver.observe(document.body)
+
+        /*onDestroy(()=>{
+            resizeObserver.disconnect()
+        })*/
+    })
+    //아래는 변수
+    let coor_arr:[number[]] = [[0,0]]
+
+    //아래는 함수
+    const resizeCanvas = () => {
+        const availableHeight = window.innerHeight * 0.7; // 100vh - (탑바 10vh + 바텀바 10vh) = 80vh
+        const availableWidth = window.innerWidth;
+
+        canvasWidth = availableWidth;
+        canvasHeight = availableHeight;
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        ctx!.lineWidth = line;
+        ctx!.strokeStyle = color;
+        ctx!.fillStyle = backcolor;
+        ctx!.clearRect(0, 0, canvas.width, canvas.height);  // 캔버스 초기화
+    };
 
     const handleStart = (({ offsetX: x, offsetY: y}: { offsetX: number, offsetY: number}) => {
         if(color === backcolor) {
@@ -56,6 +87,35 @@
         l = left
     }
 
+    const get_coordinate = (e:MouseEvent) =>{
+        const coordinateX = e.clientX - ctx!.canvas.offsetLeft
+        const coordinateY = e.clientY - ctx!.canvas.offsetTop
+        if(draw[0] !== 0){
+           coor_arr.push([coordinateX, coordinateY]) 
+        }
+        //console.log(coor_arr)
+
+        if(draw[0] !== 0&&coor_arr.length > draw[0]){
+            let urr = []
+            for(let i=0; i<draw[0]; i++){
+                urr.push(coor_arr[coor_arr.length - (i+1)])
+            } 
+            ctx?.beginPath()
+            ctx?.moveTo(urr[0][0], urr[0][1])
+            for(let i=1; i<draw[0]; i++){
+                ctx?.lineTo(urr[i][0], urr[i][1])
+            }
+            ctx!.fillStyle = color
+            
+            ctx?.fill()
+            //뒷정리
+            urr = []
+            coor_arr = [[0,0]]
+            draw[0] = 0
+            console.log("end rect")
+        }
+    }
+
     //마우스 커서 아래에 원 하나 그리기, 크기 조절에 실시간 영향을 반영
     let mousecircle:HTMLDivElement;
     function handleMouseMove(event:MouseEvent) {
@@ -68,7 +128,7 @@
 
         // 마우스 위치에서 원의 중심이 마우스 커서 위치에 맞도록 조정
         mousecircle.style.left = `${mouseX - circleDiameter / 2}px`;
-        mousecircle.style.top = `${(mouseY - circleDiameter / 2)+110}px`;
+        mousecircle.style.top = `${(mouseY - circleDiameter / 2)+130}px`;
         mousecircle.style.width = `${circleDiameter}px`;
         mousecircle.style.height = `${circleDiameter}px`;
     }
@@ -78,7 +138,9 @@
             ctx.strokeStyle = color
             ctx!.lineWidth = line
         }
+        
         //mousecircle.style.borderColor = color
+
     }
 
     //8월 30 문제 상황, 위 주석 코드 문제 생김, style객체를 못읽는 에러, 
@@ -94,6 +156,10 @@
     //도형 삽입 기능 구현
     //도형 삽입을 누르면 동그라미가 네모나게 바뀜
     //->드래그 시작 좌표와 끝나는 지점을 찾아서 그림을 그린다.
+
+    //10/13 응 중간도 ㅈ됐고 동아리 활동도 ㅈ됐어 ㅋㅋ
+    //일단 그림판 기능 완성하고 낙서게시판으로 사용하든 뭘로 하든 일단 그림판은 완성해야함 ㅇ
+
 </script>
 
 <canvas
@@ -130,12 +196,14 @@
             offsetY: clientY - t
         })
     }}
+    on:click={(e)=>{
+        get_coordinate(e)
+    }}
 />
 <div class="mousecircle" bind:this={mousecircle}></div>
 
 <style>
     canvas {
-        border: 1px solid black;
         cursor: none;
     }
 
