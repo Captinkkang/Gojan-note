@@ -7,6 +7,7 @@
     export let backcolor = '#fff'
     export let line:number = 3
     export let draw:[number, boolean, boolean] = [0, false, false]
+    export let draw_line:[number, number, string] = [0, 0, "nl"]
 
     let canvas:HTMLCanvasElement;
     let ctx:CanvasRenderingContext2D|null;
@@ -17,29 +18,8 @@
     let canvasWidth = 0
     let canvasHeight = 0
 
-    onMount(()=>{
-        ctx = canvas.getContext('2d')
-        ctx!.lineWidth = line
-
-        handleSize()
-        resizeCanvas()
-        
-        const resizeObserver = new ResizeObserver(()=>{
-            resizeCanvas()
-            handleSize()
-        })
-
-        resizeObserver.observe(document.body)
-
-        /*onDestroy(()=>{
-            resizeObserver.disconnect()
-        })*/
-    })
-    //아래는 변수
-    let coor_arr:[number[]] = [[0,0]]
-
-    //아래는 함수
     const resizeCanvas = () => {
+        if(!canvas || !ctx) return
         const availableHeight = window.innerHeight * 0.7; // 100vh - (탑바 10vh + 바텀바 10vh) = 80vh
         const availableWidth = window.innerWidth;
 
@@ -54,6 +34,37 @@
         ctx!.fillStyle = backcolor;
         ctx!.clearRect(0, 0, canvas.width, canvas.height);  // 캔버스 초기화
     };
+    
+    const handleSize = () => {
+        const { top, left } = canvas.getBoundingClientRect()
+        t = top
+        l = left
+    }
+
+    onMount(()=>{
+        if (!canvas) return;
+        ctx = canvas.getContext('2d')
+        ctx!.lineWidth = line
+
+        handleSize()
+        resizeCanvas()
+        
+        const resizeObserver = new ResizeObserver(()=>{
+            resizeCanvas()
+            handleSize()
+        })
+
+        resizeObserver.observe(document.body)
+
+        onDestroy(()=>{
+            resizeObserver.disconnect()
+        })
+    })
+    //아래는 변수
+    let coor_arr:[number[]] = [[0,0]]
+
+    //아래는 함수
+    
 
     const handleStart = (({ offsetX: x, offsetY: y}: { offsetX: number, offsetY: number}) => {
         if(color === backcolor) {
@@ -81,39 +92,72 @@
         start = { x : x1, y: y1}
     })
 
-    const handleSize = () => {
-        const { top, left } = canvas.getBoundingClientRect()
-        t = top
-        l = left
-    }
+    
 
     const get_coordinate = (e:MouseEvent) =>{
         const coordinateX = e.clientX - ctx!.canvas.offsetLeft
         const coordinateY = e.clientY - ctx!.canvas.offsetTop
-        if(draw[0] !== 0){
+        if(draw[0] !== 0||draw_line[0] !==0){
            coor_arr.push([coordinateX, coordinateY]) 
         }
-        //console.log(coor_arr)
+        //최근 좌표 배열임
 
         if(draw[0] !== 0&&coor_arr.length > draw[0]){
             let urr = []
             for(let i=0; i<draw[0]; i++){
                 urr.push(coor_arr[coor_arr.length - (i+1)])
             } 
+            //console.log(urr)
             ctx?.beginPath()
             ctx?.moveTo(urr[0][0], urr[0][1])
             for(let i=1; i<draw[0]; i++){
                 ctx?.lineTo(urr[i][0], urr[i][1])
             }
             ctx!.fillStyle = color
-            
-            ctx?.fill()
+            if(draw[2] === true){
+               ctx?.fill() 
+            }
+            ctx?.lineTo(urr[0][0], urr[0][1])
+            ctx?.stroke()
+            ctx?.closePath()
             //뒷정리
             urr = []
             coor_arr = [[0,0]]
             draw[0] = 0
-            console.log("end rect")
-        }
+            draw[2] = false
+            //console.log("end rect")
+        }//다각형 그리기
+
+        if(draw_line[0] == 2&&coor_arr.length > draw_line[0]){
+            //console.log("선 언제그려")
+            let urr = []
+            for(let i=0; i<draw_line[0]; i++){
+                urr.push(coor_arr[coor_arr.length - (i+1)])
+            }
+            if(draw_line[2] === "nl"){
+                ctx!.lineCap = "butt"
+            }else if(draw_line[2] === "ml"){
+                ctx!.lineCap = "square"
+            }else if(draw_line[2] === "rl"){
+                ctx!.lineCap = "round"
+            }
+            
+            if(draw_line[1] !== 0){
+                ctx?.setLineDash([draw_line[1]])
+            }else ctx?.setLineDash([])
+            ctx?.beginPath()
+            ctx?.moveTo(urr[0][0], urr[0][1])
+            ctx?.lineTo(urr[1][0], urr[1][1])
+            ctx!.fillStyle = color
+            ctx?.fill()
+            ctx?.stroke()
+            ctx?.closePath()
+            //뒷정리
+            urr = []
+            coor_arr = [[0,0]]
+            draw_line[0] = 0
+            console.log("end line")
+        }//직선 그리기
     }
 
     //마우스 커서 아래에 원 하나 그리기, 크기 조절에 실시간 영향을 반영
@@ -158,7 +202,19 @@
     //->드래그 시작 좌표와 끝나는 지점을 찾아서 그림을 그린다.
 
     //10/13 응 중간도 ㅈ됐고 동아리 활동도 ㅈ됐어 ㅋㅋ
-    //일단 그림판 기능 완성하고 낙서게시판으로 사용하든 뭘로 하든 일단 그림판은 완성해야함 ㅇ
+    //일단 그림판 기능 완성하고 낙서게시판으로 사용하든 뭘로 하든 일단 그림판은 완성해야함
+
+    //10/17 응, 응, 응 앙 쿠로코
+    //정오각형은 모르겠고 정사각형!, 직사각형!, 평행사변형?, 정삼각형!
+    //일단 에러 발생, 큰 문제? 지금은 아닌데, 나중에 저장 관련할 때 골치아플듯...
+    //갑자기 onMount잠깐 건드니까 promise 에러났다고 뜨는거 같은데 gpt가 준 코드라 아직 잘 모름...
+    //정사각형은 대각선 있으면 정해지고, 직사각형은 점 3개 필요함, 단 점 찍는 좌표가 직각을 벗어나면 안됨, 그럼 평사..
+    //평사도 될 듯
+    //정삼각형은 점3개로 최초 2개는 밑변 나머지 점은 방향, 어디로 향해서 정삼각형을 그리는지, 3번째는 좌표는 직접적인 의미는 없음
+    //이등변도 잘 하면 될 듯? 점 2개는 직선 그리고 나머지 1개 직선과의 거리를 높으로 보고 직선 중간과 일직선 상에 놓이면 됨
+    //약간의 강제성이 있지만 그려지는게 어디야 씨빨
+    //꼬우면 니네가 그리면 됨
+    //도형 돌리는것도 나중에 추가해야지 ㅎㅎ
 
 </script>
 
