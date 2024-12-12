@@ -96,7 +96,7 @@
 <style>
 
     #top_bar {
-        background-color: rgb(7, 179, 253);
+        background-color: rgb(78, 139, 246);
         width: 100vw;
         height: 10vh;
         display: flex;
@@ -107,7 +107,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: rgb(7, 179, 253);
+        background-color: rgb(78, 139, 246);
         border: none;
     }
 
@@ -150,7 +150,7 @@
     #bottom_bar {
         display: flex;
         justify-content: space-between;
-        background-color: rgb(7, 179, 253);
+        background-color: rgb(78, 139, 246);
         width: 100vw;
         height: 10vh;
         position: fixed;
@@ -168,7 +168,7 @@
         width: 50%;
         height: 100%;
         overflow: hidden;
-        background-color: rgb(7, 179, 253);
+        background-color: rgb(78, 139, 246);
         border: none;
     }
 

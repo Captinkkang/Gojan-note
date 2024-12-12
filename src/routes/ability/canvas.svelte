@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onDestroy, onMount } from "svelte";
+    import { onDestroy, onMount, createEventDispatcher } from "svelte";
 
     export let width = 500
     export let height = 500
@@ -8,6 +8,8 @@
     export let line:number = 3
     export let draw:[number, boolean, boolean] = [0, false, false]
     export let draw_line:[number, number, string] = [0, 0, "nl"]
+    export let draw_text:[boolean, string, number, number, boolean] = [false, "", 10, 1, false]
+    export let clear_all:boolean = false
 
     let canvas:HTMLCanvasElement;
     let ctx:CanvasRenderingContext2D|null;
@@ -17,6 +19,11 @@
     let t:number, l:number
     let canvasWidth = 0
     let canvasHeight = 0
+
+    const dispatch = createEventDispatcher()
+    const send_event = (m:string, d:string|number|boolean) =>{
+        dispatch(m, {value: d})
+    }
 
     const resizeCanvas = () => {
         if(!canvas || !ctx) return
@@ -56,9 +63,9 @@
 
         resizeObserver.observe(document.body)
 
-        onDestroy(()=>{
+        /*onDestroy(()=>{
             resizeObserver.disconnect()
-        })
+        })*/
     })
     //아래는 변수
     let coor_arr:[number[]] = [[0,0]]
@@ -92,12 +99,10 @@
         start = { x : x1, y: y1}
     })
 
-    
-
     const get_coordinate = (e:MouseEvent) =>{
         const coordinateX = e.clientX - ctx!.canvas.offsetLeft
         const coordinateY = e.clientY - ctx!.canvas.offsetTop
-        if(draw[0] !== 0||draw_line[0] !==0){
+        if(draw[0] !== 0||draw_line[0] !==0||draw_text[0] !== false){
            coor_arr.push([coordinateX, coordinateY]) 
         }
         //최근 좌표 배열임
@@ -156,8 +161,33 @@
             urr = []
             coor_arr = [[0,0]]
             draw_line[0] = 0
+            ctx?.setLineDash([])
             console.log("end line")
         }//직선 그리기
+
+        if(draw_text[0] !== false&&coor_arr.length > 1){
+            console.log("언제 그려?")
+            let urr = []
+            for(let i=0; i<1; i++){
+                urr.push(coor_arr[coor_arr.length - (i+1)])
+            }
+            ctx!.fillStyle = color
+            //ctx!.font = "italic bold 20px sans-serif"
+            ctx!.textAlign = "center"
+            ctx!.textBaseline = "middle"
+            //ctx!.font = `${draw_text[3]} ${draw_text[2]}px ${draw_text[1]}`
+            console.log(draw_text[1],urr[0][0], urr[0][1])
+            if(draw_text[4] === true){
+                ctx?.fillText(draw_text[1],urr[0][0], urr[0][1])
+            }
+            ctx?.strokeText(draw_text[1],urr[0][0], urr[0][1])
+            console.log("이벤트 주작은 뭐야 씨발년")
+            urr = []
+            coor_arr = [[0,0]]
+            draw_text = [false, "", 10, 1, false]
+            console.log("여기까지가 템플런임")
+            //[false, "", 10, 1, false]
+        }
     }
 
     //마우스 커서 아래에 원 하나 그리기, 크기 조절에 실시간 영향을 반영
@@ -181,6 +211,14 @@
         if(ctx) {
             ctx.strokeStyle = color
             ctx!.lineWidth = line
+        }
+        if(clear_all === true){
+            let answer = prompt("정말로 전체를 지울건가요? 맞다면 t 입력")
+            if(answer === "t"||answer === "T")ctx?.clearRect(0,0,canvas.width, canvas.height)
+            clear_all = false
+            //console.log("이벤트 보냈다.")
+            send_event("cclear",clear_all)
+            
         }
         
         //mousecircle.style.borderColor = color

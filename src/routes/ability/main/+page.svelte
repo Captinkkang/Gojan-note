@@ -45,7 +45,7 @@
         margin: 2.93%;
         width: 25vw;
         height: 40vh;
-        background-color: rgb(7,54,110);
+        background-color: rgb(31, 46, 101);
         padding: 1%;
         display: flex;
         flex-direction: column;
