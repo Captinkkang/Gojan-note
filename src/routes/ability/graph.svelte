@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import {evaluate, exp, or} from "mathjs"
+  import { scale } from "svelte/transition";
     export let isdark = false
     export let graph_text = ""
 
@@ -19,13 +20,65 @@
       if (ctx) {
         ctx.fillStyle = '#fff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        drawGrid(GRID_SIZE, '#ddd');
+        drawGrid(canvas.width / 100, '#ddd');
         drawAxes('#000');
         drawLabels('#000');
+        /*ctx.beginPath();
+        ctx.moveTo(0,300);
+        ctx.lineTo(300,0);
+        ctx.stroke();
+        console.log("이건 되냐 씨발 새끼도노")*/
       }
     });
 
-    const drawGrid = (scale: number, color: string) => {
+  const drawGrid = (scale: number, color: string) => {
+    if (!ctx) return;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 0.5;
+
+    const halfCanvasWidth = canvas.width / 2;
+    const halfCanvasHeight = canvas.height / 2;
+
+    // x 방향의 격자 그리기
+    for (let x = -50; x <= 50; x+=5) {
+      const xPos = halfCanvasWidth + x*scale; // x 좌표 계산
+      ctx.beginPath();
+      ctx.moveTo(xPos, 0);
+      ctx.lineTo(xPos, canvas.height);
+      ctx.stroke();
+    }
+
+    // y 방향의 격자 그리기
+    for (let y = -50; y <= 50; y+=5) {
+      const yPos = halfCanvasHeight - y*scale; // y 좌표 계산
+      ctx.beginPath();
+      ctx.moveTo(0, yPos);
+      ctx.lineTo(canvas.width, yPos);
+      ctx.stroke();
+    }
+  };  
+
+  const drawAxes = (color: string) => {
+    if (!ctx) return;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+
+    // x축 그리기
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height / 2);
+    ctx.lineTo(canvas.width, canvas.height / 2);
+    ctx.stroke();
+
+    // y축 그리기
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2, 0);
+    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.stroke();
+  };  
+
+    /*const drawGrid = (scale: number, color: string) => {
       if (!ctx) return;
 
       ctx.strokeStyle = color;
@@ -52,7 +105,7 @@
       if (!ctx) return;
 
       ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 0.5;
 
       ctx.beginPath();
       ctx.moveTo(0, canvas.height / 2);
@@ -63,9 +116,9 @@
       ctx.moveTo(canvas.width / 2, 0);
       ctx.lineTo(canvas.width / 2, canvas.height);
       ctx.stroke();
-    };
+    };*/
 
-    const drawLabels = (color: string) => {
+    /*const drawLabels = (color: string) => {
       if (!ctx) return;
 
       ctx.font = '10px Arial';
@@ -82,7 +135,34 @@
           ctx.fillText(y.toString(), canvas.width / 2 + 5, yPos + 5);
         }
       }
-    };
+    };*/
+
+  const drawLabels = (color: string) => {
+    if (!ctx) return;
+
+    const GRID_SIZE = canvas.width / 16; // 격자 간격
+    const centerX = canvas.width / 2;   // 캔버스 중앙 x좌표
+    const centerY = canvas.height / 2;  // 캔버스 중앙 y좌표
+
+    ctx.font = '10px Arial';
+    ctx.fillStyle = color;
+
+    // x축 라벨
+    for (let x = -50; x <= 50; x+=10) { // x축 라벨 개수 조정 (-8~8로 맞춤)
+      const xPos = centerX + x * (canvas.width / 100);
+      if (x !== 0) { // 0을 제외하고 라벨 표시
+        ctx.fillText(x.toString(), xPos - 5, centerY + 15);
+      }
+    }
+
+    // y축 라벨
+    for (let y = -50; y <= 50; y+=10) { // y축 라벨 개수 조정 (-8~8로 맞춤)
+      const yPos = centerY - y * (canvas.width / 100);
+      if (y !== 0) { // 0을 제외하고 라벨 표시
+        ctx.fillText(y.toString(), centerX + 5, yPos + 5);
+      }
+    }
+  };
 
     const toggleMode = () => {
       if (ctx) {
@@ -90,14 +170,14 @@
         if (isDarkMode) {
           ctx.fillStyle = '#000';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          drawGrid(GRID_SIZE, '#444');
+          drawGrid(canvas.width / 100, '#444');
           drawAxes('#fff');
           ctx.fillStyle = '#fff';
           drawLabels('#fff');
         } else {
           ctx.fillStyle = '#fff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          drawGrid(GRID_SIZE, '#ddd');
+          drawGrid(canvas.width / 100, '#ddd');
           drawAxes('#000');
           ctx.fillStyle = '#000';
           drawLabels('#000');
@@ -158,34 +238,32 @@
     }
 
     const draw_garph = (arr:{x:number, y:number}[][]) =>{
-      ctx!.beginPath();
-      ctx!.moveTo(150,150);
-      ctx!.lineTo(151,149);
-      ctx!.stroke();
+      if(!ctx) return;
+      
+      ctx.strokeStyle = `#${Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')}`;
+      ctx.fillStyle = '#fff';
+      ctx.lineWidth = 1;
+      console.log(ctx!.strokeStyle);
 
       const last_cor = arr[arr.length-1];
       let canvas_cor = []
 
       for(let i=0; i<last_cor.length; i++){
         let { x, y } = last_cor[i]
-        canvas_cor.push({x:x*3+150, y:-(y*3+150)})
+        canvas_cor.push({x:x*3+150, y:150-y*3})
       }
       console.log(canvas_cor, "빰빠빠빰 씨발")
 
-      ctx!.strokeStyle = `#${Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')}`;
-      ctx!.lineWidth = 1;
       
 
-      console.log(ctx!.strokeStyle)
-
-      
-
+      ctx!.beginPath();
       for(let i=0; i<last_cor.length; i++){
         const { x, y } = canvas_cor[i]
         //console.log(x,y)
+        //0, 0=> 150, 150
+        //-7,-14=>
         
         
-        ctx!.beginPath();
         if (i === 0) {
           // 첫 번째 점으로 이동
           ctx!.moveTo(x, y);
@@ -197,23 +275,31 @@
       ctx!.stroke();
     }
     //=> 문제점, draw 클릭 시 한 번만 실행+ 중복 처리 과정 배열 잘못 만듦
+    //=>문제점 해결은 모르겠다 솔직히 뭐가 문젠지 아직은 모르겠음, 
+    //일단 현재 문제는 그래프 2번 못 그림, 그래프가 그려는 지는데 그게 정확한 그래프 인지는 모름
 
     //2. 수식 변환 함수
     //3. 변환 수식을 통해 값을 얻어내서 배열에 저장하는 함수
     //4. 배열에 저장된 값을 캔버스에 그리는 함수
+    //=>다 만들긴 했음
     
 
     $: {
+        console.log(graph_text)
+        isDarkMode = isdark
+        toggleMode()
         if(graph_text !== ""){
           change_exp(graph_text)
           draw_garph(graph_cor)
           graph_text = ""
         }
-        console.log(graph_text)
-        isDarkMode = isdark
-        toggleMode()
     } 
     
 </script>
   
-<canvas bind:this={canvas} width="300" height="300"></canvas>
+<canvas bind:this={canvas} width="300" height="300" on:click={(e)=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  console.log(`캔버스 좌표: (${x}, ${y})`);
+}}></canvas>
